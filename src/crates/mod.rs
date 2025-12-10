@@ -7,6 +7,7 @@ use std::fmt;
 use std::str::FromStr;
 
 pub use crate::crates::sources::github::GitHubRepo;
+pub use crate::crates::sources::gitcode::GitCodeRepo;
 pub use crate::crates::sources::registry::RegistryCrate;
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize, Clone)]
@@ -46,6 +47,7 @@ impl fmt::Display for GitRepo {
 pub enum Crate {
     Registry(RegistryCrate),
     GitHub(GitHubRepo),
+    GitCode(GitCodeRepo),
     Local(String),
     Path(String),
     Git(GitRepo),
@@ -56,6 +58,7 @@ impl Crate {
         match self {
             Crate::Registry(krate) => format!("reg:{}", krate),
             Crate::GitHub(repo) => format!("gh:{}", repo.slug()),
+            Crate::GitCode(repo) => format!("gc:{}", repo.slug()),
             Crate::Local(name) => format!("local:{}", name),
             Crate::Path(path) => format!("path:{}", path),
             Crate::Git(repo) => format!("git:{}", repo.url),
@@ -68,6 +71,7 @@ impl fmt::Display for Crate {
         match self {
             Crate::Registry(krate) => write!(f, "{}", krate),
             Crate::GitHub(repo) => write!(f, "{}", repo),
+            Crate::GitCode(repo) => write!(f, "{}", repo),
             Crate::Local(name) => write!(f, "local:{}", name),
             Crate::Path(path) => write!(f, "path:{}", path),
             Crate::Git(repo) => write!(f, "{}", repo),
@@ -90,6 +94,12 @@ impl FromStr for Crate {
                 Ok(Crate::GitHub(GitHubRepo::new(org, name)))
             } else {
                 anyhow::bail!("invalid github repo format: {}", s)
+            }
+        } else if let Some(stripped) = s.strip_prefix("gc:") {
+            if let Some((org, name)) = stripped.split_once('/') {
+                Ok(Crate::GitCode(GitCodeRepo::new(org, name)))
+            } else {
+                anyhow::bail!("invalid gitcode repo format: {}", s)
             }
         } else if let Some(stripped) = s.strip_prefix("local:") {
             Ok(Crate::Local(stripped.to_string()))
@@ -115,6 +125,9 @@ mod tests {
         let krate = Crate::GitHub(GitHubRepo::new("rust-lang", "rust"));
         assert_eq!(krate.id(), "gh:rust-lang/rust");
 
+        let krate = Crate::GitCode(GitCodeRepo::new("rust-lang", "rust"));
+        assert_eq!(krate.id(), "gc:rust-lang/rust");
+
         let krate = Crate::Local("my-crate".to_string());
         assert_eq!(krate.id(), "local:my-crate");
     }
@@ -126,6 +139,9 @@ mod tests {
 
         let krate = Crate::GitHub(GitHubRepo::new("tokio-rs", "tokio"));
         assert_eq!(krate.to_string(), "tokio-rs/tokio");
+
+        let krate = Crate::GitCode(GitCodeRepo::new("tokio-rs", "tokio"));
+        assert_eq!(krate.to_string(), "tokio-rs/tokio");
     }
 
     #[test]
@@ -135,6 +151,9 @@ mod tests {
 
         let krate: Crate = "gh:rust-lang/rust".parse().unwrap();
         assert!(matches!(krate, Crate::GitHub(_)));
+
+        let krate: Crate = "gc:rust-lang/rust".parse().unwrap();
+        assert!(matches!(krate, Crate::GitCode(_)));
 
         let krate: Crate = "local:my-crate".parse().unwrap();
         assert!(matches!(krate, Crate::Local(_)));

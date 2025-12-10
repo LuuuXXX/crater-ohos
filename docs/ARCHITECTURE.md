@@ -7,7 +7,7 @@ crater-ohos 是一个**独立的服务端应用**，专为鸿蒙（OpenHarmony�
 ### 核心特性
 
 - **独立服务端**：crater-ohos 本身是完整的服务端应用，不依赖任何外部 Bot
-- **平台无关**：通过平台抽象层支持多种代码托管平台（GitHub、Gitee、GitLab 等）
+- **平台无关**：通过平台抽象层支持多种代码托管平台（GitHub、Gitee、GitLab、GitCode 等）
 - **API 优先**：提供完整的 REST API，供外部 Bot 或其他客户端调用
 - **Bot 外接**：Bot 是独立的外部组件，通过 API 与服务端交互，不内置于 crater-ohos
 - **Webhook 支持**：服务端可主动通知 Bot 实验状态变化
@@ -18,7 +18,7 @@ crater-ohos 是一个**独立的服务端应用**，专为鸿蒙（OpenHarmony�
 | 维度 | rust-lang/crater | crater-ohos |
 |------|------------------|-------------|
 | 架构模式 | 单体应用 | 服务端 + 外部 Bot |
-| 平台支持 | 仅 GitHub | 多平台（GitHub、Gitee、GitLab 等） |
+| 平台支持 | 仅 GitHub | 多平台（GitHub、Gitee、GitLab、GitCode 等） |
 | API 接口 | 无独立 API | 完整 REST API |
 | Bot 集成 | 内置 GitHub Bot | 外部独立 Bot 通过 API 调用 |
 | 部署方式 | 一体化部署 | 服务端与 Bot 独立部署 |
@@ -105,10 +105,10 @@ crater-ohos 是一个**独立的服务端应用**，专为鸿蒙（OpenHarmony�
 │                                   │                                    │
 │  ┌──────────────────────────────────────────────────────────────────┐ │
 │  │            Platform Abstraction (Phase 5)                         │ │
-│  │  ┌──────────────┐  ┌─────────────┐  ┌──────────────────────────┐│ │
-│  │  │ GitHub       │  │ Gitee       │  │ GitLab                   ││ │
-│  │  │ Adapter      │  │ Adapter     │  │ Adapter                  ││ │
-│  │  └──────────────┘  └─────────────┘  └──────────────────────────┘│ │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────────┐│ │
+│  │  │ GitHub   │  │ Gitee    │  │ GitLab   │  │ GitCode          ││ │
+│  │  │ Adapter  │  │ Adapter  │  │ Adapter  │  │ Adapter          ││ │
+│  │  └──────────┘  └──────────┘  └──────────┘  └──────────────────┘│ │
 │  └──────────────────────────────────────────────────────────────────┘ │
 └────────────────────────────────────────────────────────────────────────┘
 ```
@@ -118,7 +118,7 @@ crater-ohos 是一个**独立的服务端应用**，专为鸿蒙（OpenHarmony�
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                        用户请求                              │
-│              (在 GitHub/Gitee/GitLab 发布命令)                │
+│        (在 GitHub/Gitee/GitLab/GitCode 发布命令)             │
 └───────────────────────┬─────────────────────────────────────┘
                         │
                         ▼
@@ -379,7 +379,7 @@ pub struct PlatformIssue {
 - **sandbox**：沙箱配置（内存限制、日志大小）
 - **server.acl**：访问控制
 - **server.callback**：回调配置（超时、重试）
-- **platforms**：平台配置（GitHub、Gitee、GitLab）
+- **platforms**：平台配置（GitHub、Gitee、GitLab、GitCode）
 
 ### 3.6 Platform Abstraction（平台抽象层）
 
@@ -404,7 +404,7 @@ pub trait PlatformAdapter: Send + Sync {
 - **GitHub**：HMAC-SHA256 webhook 验证
 - **Gitee**：Token-based webhook 验证
 - **GitLab**：Token-based webhook 验证
-- **GitCode**：基于 GitLab 适配器
+- **GitCode**：Token-based webhook 验证（基于 GitLab API）
 
 ## 4. 服务端与 Bot 交互
 

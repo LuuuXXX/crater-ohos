@@ -451,11 +451,13 @@ retry-count = 3
 - ✅ `gitee.rs`：Gitee 适配器实现
   - 适配 Gitee API v5
 - ✅ `gitlab.rs`：GitLab 适配器实现
-  - 支持 GitLab 和 GitCode（基于 GitLab）
+  - 支持 GitLab API v4
+- ✅ `gitcode.rs`：GitCode 适配器实现
+  - 支持 GitCode API（基于 GitLab）
 
 #### 2. 配置支持
 - ✅ 多平台配置 (`PlatformsConfig`)
-  - GitHub、Gitee、GitLab 独立配置
+  - GitHub、Gitee、GitLab、GitCode 独立配置
   - API 基础 URL、Token、Webhook Secret
 
 #### 3. 测试覆盖
@@ -464,6 +466,7 @@ retry-count = 3
 - ✅ GitHub Issue URL 生成测试
 - ✅ Gitee Issue URL 生成测试
 - ✅ GitLab Issue URL 生成测试
+- ✅ GitCode Issue URL 生成测试
 - ✅ Webhook 签名验证测试
 
 ### ✅ Phase 6: API Layer（API 层）- 已完成

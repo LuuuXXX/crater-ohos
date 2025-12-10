@@ -1,6 +1,7 @@
 pub mod github;
 pub mod gitee;
 pub mod gitlab;
+pub mod gitcode;
 
 use crate::experiments::PlatformIssue;
 use crate::prelude::*;
@@ -105,7 +106,7 @@ impl PlatformFactory {
             PlatformType::GitHub => Box::new(github::GitHubAdapter::new(config)),
             PlatformType::Gitee => Box::new(gitee::GiteeAdapter::new(config)),
             PlatformType::GitLab => Box::new(gitlab::GitLabAdapter::new(config)),
-            PlatformType::GitCode => Box::new(gitlab::GitLabAdapter::new(config)), // GitCode is based on GitLab
+            PlatformType::GitCode => Box::new(gitcode::GitCodeAdapter::new(config)),
             PlatformType::Custom(_) => {
                 // Custom platforms default to GitHub adapter
                 // In the future, this could load a dynamically configured adapter
