@@ -18,7 +18,7 @@ pub struct PlatformIssue {
     pub identifier: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "kebab-case")]
 pub struct Experiment {
     pub name: String,

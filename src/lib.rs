@@ -7,6 +7,8 @@ extern crate serde_derive;
 mod macros;
 
 pub mod actions;
+pub mod api;
+pub mod cli;
 pub mod config;
 pub mod crates;
 pub mod db;

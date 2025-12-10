@@ -68,20 +68,132 @@ cargo clippy
 cargo doc
 ```
 
-### 使用 CLI
+## 快速使用
+
+### CLI 命令
+
+crater-ohos 提供了完整的命令行界面：
 
 ```bash
-# 准备环境
-cargo run -- prepare-local
+# 查看帮助
+crater-ohos --help
+
+# 准备本地环境
+crater-ohos prepare-local
 
 # 定义实验
-cargo run -- define-ex --ex my-experiment stable beta --crate-select demo
+crater-ohos define-ex --ex my-experiment stable beta --crate-select demo
 
 # 运行实验
-cargo run -- run-graph --ex my-experiment -t 4
+crater-ohos run-graph --ex my-experiment -t 4
+
+# 列出所有实验
+crater-ohos list-ex
 
 # 生成报告
-cargo run -- gen-report --ex my-experiment ./report
+crater-ohos gen-report --ex my-experiment ./report
+
+# 删除实验
+crater-ohos delete-ex --ex my-experiment
+
+# 中止实验
+crater-ohos abort-ex --ex my-experiment
+
+# 启动 API 服务器
+crater-ohos server --port 3000 --config config.toml
+```
+
+### REST API
+
+启动 API 服务器后，可以使用以下端点：
+
+#### 健康检查（无需认证）
+
+```bash
+# 健康检查
+curl http://localhost:3000/api/v1/health
+
+# 响应示例
+{
+  "success": true,
+  "data": {
+    "status": "ok",
+    "version": "0.1.0"
+  }
+}
+```
+
+#### 实验管理（需要认证）
+
+```bash
+# 创建实验
+curl -X POST http://localhost:3000/api/v1/experiments \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "test-experiment",
+    "toolchains": ["stable", "beta"],
+    "mode": "build-and-test",
+    "crate_select": "demo",
+    "priority": 0
+  }'
+
+# 列出所有实验
+curl http://localhost:3000/api/v1/experiments \
+  -H "Authorization: Bearer <token>"
+
+# 获取实验详情
+curl http://localhost:3000/api/v1/experiments/test-experiment \
+  -H "Authorization: Bearer <token>"
+
+# 运行实验
+curl -X POST http://localhost:3000/api/v1/experiments/test-experiment/run \
+  -H "Authorization: Bearer <token>"
+
+# 中止实验
+curl -X POST http://localhost:3000/api/v1/experiments/test-experiment/abort \
+  -H "Authorization: Bearer <token>"
+
+# 删除实验
+curl -X DELETE http://localhost:3000/api/v1/experiments/test-experiment \
+  -H "Authorization: Bearer <token>"
+```
+
+#### Agent 管理（需要认证）
+
+```bash
+# 注册 Agent
+curl -X POST http://localhost:3000/api/v1/agents/register \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-agent",
+    "capabilities": ["build", "test"]
+  }'
+
+# Agent 心跳
+curl -X POST http://localhost:3000/api/v1/agents/{agent-id}/heartbeat \
+  -H "Authorization: Bearer <token>"
+
+# 列出所有 Agent
+curl http://localhost:3000/api/v1/agents \
+  -H "Authorization: Bearer <token>"
+```
+
+#### 认证
+
+API 使用 Bearer Token 认证。Token 需要通过数据库中的 `api_tokens` 表管理，或使用 `TokenManager` trait 创建：
+
+```rust
+use crater_ohos::db::Database;
+use crater_ohos::server::tokens::{Permission, TokenManager};
+
+let db = Database::open()?;
+let token = db.create_token(
+    "my-token",
+    vec![Permission::ReadExperiments, Permission::WriteExperiments]
+)?;
+println!("Token: {}", token.token);
 ```
 
 ## 配置
@@ -95,8 +207,8 @@ github-repos = []
 local-crates = []
 
 [sandbox]
-memory-limit = "2G"
-build-log-max-size = "2M"
+memory-limit = { "GIGABYTES" = 2 }
+build-log-max-size = { "MEGABYTES" = 2 }
 build-log-max-lines = 1000
 
 [server.acl]
@@ -252,11 +364,52 @@ retry-count = 3
 - ✅ GitLab Issue URL 生成测试
 - ✅ Webhook 签名验证测试
 
-### 🚧 Phase 6: API Layer（API 层）- 计划中
+### ✅ Phase 6: API Layer（API 层）- 已完成
 
-- [ ] REST API
-- [ ] CLI 命令
-- [ ] 认证和授权
+已完成以下模块：
+
+#### 1. REST API (`src/api/`)
+- ✅ `mod.rs`：API 路由构建器
+- ✅ `error.rs`：统一错误处理
+- ✅ `response.rs`：统一响应格式
+- ✅ `middleware/auth.rs`：Bearer Token 认证中间件
+- ✅ `routes/experiments.rs`：实验管理端点
+  - `POST /api/v1/experiments` - 创建实验
+  - `GET /api/v1/experiments` - 列出所有实验
+  - `GET /api/v1/experiments/{name}` - 获取实验详情
+  - `PUT /api/v1/experiments/{name}` - 编辑实验
+  - `DELETE /api/v1/experiments/{name}` - 删除实验
+  - `POST /api/v1/experiments/{name}/run` - 运行实验
+  - `POST /api/v1/experiments/{name}/abort` - 中止实验
+- ✅ `routes/agents.rs`：Agent 管理端点
+  - `POST /api/v1/agents/register` - 注册 Agent
+  - `POST /api/v1/agents/{id}/heartbeat` - Agent 心跳
+  - `GET /api/v1/agents` - 列出所有 Agent
+  - `GET /api/v1/agents/{id}` - 获取 Agent 详情
+- ✅ `routes/health.rs`：健康检查端点
+  - `GET /api/v1/health` - 健康检查
+  - `GET /api/v1/config` - 获取配置信息
+
+#### 2. CLI 命令 (`src/cli/`)
+- ✅ `args.rs`：命令行参数定义（基于 clap）
+- ✅ `commands/prepare.rs`：`prepare-local` - 准备本地环境
+- ✅ `commands/define.rs`：`define-ex` - 定义实验
+- ✅ `commands/run.rs`：`run-graph` - 运行实验
+- ✅ `commands/report.rs`：`gen-report` - 生成报告
+- ✅ `commands/server.rs`：`server` - 启动 API 服务器
+- ✅ `commands/manage.rs`：实验管理命令
+  - `list-ex` - 列出所有实验
+  - `delete-ex` - 删除实验
+  - `abort-ex` - 中止实验
+
+#### 3. 认证和授权
+- ✅ Bearer Token 认证中间件
+- ✅ 基于 Permission 的权限控制
+- ✅ 支持 Admin 权限
+
+#### 4. 测试覆盖
+- ✅ API 模块集成测试（5 个测试）
+- ✅ 所有 Phase 1-6 测试通过（121 个测试）
 
 ### 🚧 Phase 7: Bot Integration（Bot 集成）- 计划中
 
@@ -330,18 +483,22 @@ impl PlatformAdapter for CustomAdapter {
 
 项目包含全面的测试覆盖：
 
-- **单元测试**：109 测试用例
+- **单元测试**：103 测试用例
   - 数据库操作测试
   - 领域模型测试
   - 平台适配器测试
   - 工具函数测试
   - 序列化/反序列化测试
+  - Token 管理测试
+  - Agent 管理测试
   
-- **集成测试**：7 个集成测试
+- **集成测试**：18 个集成测试
   - 数据库迁移测试
   - 配置加载测试
   - 实验工作流测试
   - 表结构验证测试
+  - API 模块测试
+  - Service 层集成测试
 
 运行测试：
 
@@ -364,42 +521,13 @@ cargo test -- --nocapture
 - `experiment_metadata`：实验元数据（callback URL、平台等）
 - `results`：构建和测试结果
 - `experiment_crates`：实验包含的 crate 列表
+- `agents`：Agent 信息和状态（Phase 4）
+- `api_tokens`：API Token 管理（Phase 4）
 - `shas`：Git 提交 SHA
 - `saved_names`：工具链名称映射
 - `migrations`：数据库迁移记录
 
-## API 设计（Phase 6 计划）
-
-### 创建实验
-
-```http
-POST /api/v1/experiments
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "name": "test-experiment",
-  "toolchains": ["stable", "beta"],
-  "mode": "build-and-test",
-  "crate-select": "demo",
-  "platform-issue": {
-    "platform": "gitcode",
-    "api_url": "https://api.gitcode.com/issues/1",
-    "html_url": "https://gitcode.com/issues/1",
-    "identifier": "1"
-  },
-  "callback-url": "https://bot.example.com/callback"
-}
-```
-
-### 查询实验状态
-
-```http
-GET /api/v1/experiments/{name}
-Authorization: Bearer <token>
-```
-
-### Webhook 回调
+## Webhook 回调
 
 当实验状态变化时，系统会向配置的 callback URL 发送通知：
 

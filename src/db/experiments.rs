@@ -16,6 +16,13 @@ impl Database {
         Database { pool }
     }
 
+    /// Open the default database
+    pub fn open() -> Fallible<Self> {
+        let db_path = "crater.db";
+        let pool = crate::db::create_pool(db_path)?;
+        Ok(Database::new(pool))
+    }
+
     /// Create a temporary in-memory database for testing
     pub fn temp() -> Fallible<Self> {
         let pool = crate::db::create_memory_pool()?;

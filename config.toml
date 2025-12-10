@@ -4,8 +4,8 @@ github-repos = []
 local-crates = []
 
 [sandbox]
-memory-limit = "2G"
-build-log-max-size = "2M"
+memory-limit = { "GIGABYTES" = 2 }
+build-log-max-size = { "MEGABYTES" = 2 }
 build-log-max-lines = 1000
 
 [server.acl]
