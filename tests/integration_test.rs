@@ -68,3 +68,25 @@ fn test_experiment_metadata_schema() {
     assert!(schema.contains("created_at"), "should have created_at column");
     assert!(schema.contains("FOREIGN KEY"), "should have foreign key constraint");
 }
+
+#[test]
+fn test_experiments_table_has_platform_issue_columns() {
+    let pool = create_memory_pool().expect("failed to create pool");
+    let conn = pool.get().expect("failed to get connection");
+    
+    // Query the table schema to verify platform_issue columns exist
+    let columns: Vec<String> = conn
+        .query(
+            "PRAGMA table_info(experiments)",
+            std::iter::empty::<&dyn rusqlite::ToSql>(),
+            |row| row.get::<_, String>(1)  // Get column name
+        )
+        .expect("failed to query columns");
+    
+    assert!(columns.contains(&"platform_issue".to_string()), 
+        "experiments table should have platform_issue column");
+    assert!(columns.contains(&"platform_issue_url".to_string()), 
+        "experiments table should have platform_issue_url column");
+    assert!(columns.contains(&"platform_issue_identifier".to_string()), 
+        "experiments table should have platform_issue_identifier column");
+}
