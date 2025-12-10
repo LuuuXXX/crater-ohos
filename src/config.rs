@@ -91,6 +91,7 @@ pub struct PlatformsConfig {
     pub github: Option<PlatformInstanceConfig>,
     pub gitee: Option<PlatformInstanceConfig>,
     pub gitlab: Option<PlatformInstanceConfig>,
+    pub gitcode: Option<PlatformInstanceConfig>,
 }
 
 #[cfg(test)]

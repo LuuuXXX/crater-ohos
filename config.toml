@@ -14,3 +14,25 @@ allowed-users = []
 [server.callback]
 timeout-secs = 30
 retry-count = 3
+
+# Platform configuration examples
+# [platforms.github]
+# api-base-url = "https://api.github.com"
+# token = "your-github-token"
+# webhook-secret = "your-webhook-secret"
+
+# [platforms.gitee]
+# api-base-url = "https://gitee.com/api/v5"
+# token = "your-gitee-token"
+# webhook-secret = "your-webhook-secret"
+
+# [platforms.gitlab]
+# api-base-url = "https://gitlab.com/api/v4"
+# token = "your-gitlab-token"
+# webhook-secret = "your-webhook-secret"
+
+# [platforms.gitcode]
+# api-base-url = "https://gitcode.com/api/v4"
+# token = "your-gitcode-token"
+# webhook-secret = "your-webhook-secret"
+
