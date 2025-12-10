@@ -12,7 +12,9 @@ pub mod db;
 pub mod dirs;
 pub mod experiments;
 pub mod prelude;
+pub mod report;
 pub mod results;
+pub mod runner;
 pub mod toolchain;
 pub mod utils;
 
