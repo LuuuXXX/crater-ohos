@@ -6,7 +6,7 @@ pub fn encode<T: AsRef<[u8]>>(data: T) -> String {
 }
 
 pub fn decode(s: &str) -> Result<Vec<u8>, anyhow::Error> {
-    if s.len() % 2 != 0 {
+    if !s.len().is_multiple_of(2) {
         anyhow::bail!("hex string has odd length");
     }
 

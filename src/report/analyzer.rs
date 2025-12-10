@@ -1,3 +1,6 @@
+// Allow dead code for Phase 3 functions not yet fully connected
+#![allow(dead_code)]
+
 use crate::report::{Comparison, CrateResult, RawTestResults};
 use crate::results::TestResult;
 use std::collections::HashMap;
@@ -74,8 +77,8 @@ impl TestResults {
 
             // Add to category
             categories
-                .entry(crate_result.res.clone())
-                .or_insert_with(Vec::new)
+                .entry(crate_result.res)
+                .or_default()
                 .push(crate_result);
         }
 

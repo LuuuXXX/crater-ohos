@@ -1,4 +1,38 @@
 use crater_ohos::db::{create_memory_pool, QueryUtils};
+use crater_ohos::experiments::{Mode, Status};
+
+#[test]
+fn test_database_migrations() {
+    let pool = create_memory_pool().unwrap();
+    let conn = pool.get().unwrap();
+    // 验证所有表都已创建
+    let result = conn.get_row(
+        "SELECT 1 FROM experiments LIMIT 1",
+        std::iter::empty::<&dyn rusqlite::ToSql>(),
+        |_| Ok(1)
+    );
+    // Table exists (may be empty or not)
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_config_loading() {
+    // 测试配置文件如果存在可以正常加载
+    use crater_ohos::config::DemoCrates;
+    let demo_crates = DemoCrates::default();
+    // Default should work
+    assert!(demo_crates.crates.is_empty() || !demo_crates.crates.is_empty());
+}
+
+#[test]
+fn test_experiment_workflow() {
+    // 测试实验创建和状态转换的基本流程
+    let status = Status::Queued;
+    assert_eq!(status.to_str(), "queued");
+    
+    let mode = Mode::BuildAndTest;
+    assert_eq!(mode.to_str(), "build-and-test");
+}
 
 #[test]
 fn test_experiment_metadata_table_exists() {

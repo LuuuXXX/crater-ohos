@@ -6,6 +6,7 @@ use crate::crates::Crate;
 use crate::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
+use std::str::FromStr;
 
 pub use crate::results::db::{DatabaseDB, ProgressData};
 #[cfg(test)]
@@ -37,6 +38,31 @@ impl TestResult {
     }
 }
 
+impl FromStr for TestResult {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Fallible<Self> {
+        if let Some(reason_str) = s.strip_prefix("build-fail:") {
+            let reason = FailureReason::from_str(reason_str)?;
+            Ok(TestResult::BuildFail(reason))
+        } else if let Some(reason_str) = s.strip_prefix("test-fail:") {
+            let reason = FailureReason::from_str(reason_str)?;
+            Ok(TestResult::TestFail(reason))
+        } else if let Some(reason_str) = s.strip_prefix("prepare-fail:") {
+            let reason = FailureReason::from_str(reason_str)?;
+            Ok(TestResult::PrepareFail(reason))
+        } else {
+            match s {
+                "test-pass" => Ok(TestResult::TestPass),
+                "test-skipped" => Ok(TestResult::TestSkipped),
+                "skipped" => Ok(TestResult::Skipped),
+                "error" => Ok(TestResult::Error),
+                _ => anyhow::bail!("unknown test result: {}", s),
+            }
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum FailureReason {
@@ -50,6 +76,24 @@ pub enum FailureReason {
     CompilerDiagnosticChange,
     CompilerError(BTreeSet<DiagnosticCode>),
     DependsOn(BTreeSet<Crate>),
+}
+
+impl FromStr for FailureReason {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Fallible<Self> {
+        match s {
+            "unknown" => Ok(FailureReason::Unknown),
+            "oom" => Ok(FailureReason::OOM),
+            "no-space" => Ok(FailureReason::NoSpace),
+            "timeout" => Ok(FailureReason::Timeout),
+            "ice" => Ok(FailureReason::ICE),
+            "network-access" => Ok(FailureReason::NetworkAccess),
+            "docker" => Ok(FailureReason::Docker),
+            "compiler-diagnostic-change" => Ok(FailureReason::CompilerDiagnosticChange),
+            _ => anyhow::bail!("unknown failure reason: {}", s),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize, PartialOrd, Ord)]
@@ -83,6 +127,25 @@ impl EncodedLog {
             EncodedLog::Plain(data) => data,
             EncodedLog::Gzip(data) => data,
         }
+    }
+
+    pub fn to_plain(&self) -> Fallible<Vec<u8>> {
+        match self {
+            EncodedLog::Plain(data) => Ok(data.clone()),
+            EncodedLog::Gzip(data) => {
+                use flate2::read::GzDecoder;
+                use std::io::Read;
+
+                let mut decoder = GzDecoder::new(&data[..]);
+                let mut result = Vec::new();
+                decoder.read_to_end(&mut result)?;
+                Ok(result)
+            }
+        }
+    }
+
+    pub fn get_encoding_type(&self) -> EncodingType {
+        self.encoding_type()
     }
 
     pub fn encoding_type(&self) -> EncodingType {
@@ -120,7 +183,7 @@ impl EncodedLog {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EncodingType {
     Plain,
     Gzip,
@@ -196,5 +259,44 @@ mod tests {
         let json = serde_json::to_string(&code).unwrap();
         let parsed: DiagnosticCode = serde_json::from_str(&json).unwrap();
         assert_eq!(parsed.0, "E0308");
+    }
+
+    #[test]
+    fn test_test_result_parsing() {
+        assert_eq!(
+            TestResult::from_str("test-pass").unwrap(),
+            TestResult::TestPass
+        );
+        assert_eq!(
+            TestResult::from_str("build-fail:unknown").unwrap(),
+            TestResult::BuildFail(FailureReason::Unknown)
+        );
+        assert_eq!(
+            TestResult::from_str("test-fail:timeout").unwrap(),
+            TestResult::TestFail(FailureReason::Timeout)
+        );
+    }
+
+    #[test]
+    fn test_failure_reason() {
+        assert_eq!(
+            FailureReason::from_str("oom").unwrap(),
+            FailureReason::OOM
+        );
+        assert_eq!(
+            FailureReason::from_str("timeout").unwrap(),
+            FailureReason::Timeout
+        );
+        assert_eq!(
+            FailureReason::from_str("ice").unwrap(),
+            FailureReason::ICE
+        );
+    }
+
+    #[test]
+    fn test_encoded_log() {
+        let plain = EncodedLog::Plain(b"test log".to_vec());
+        assert_eq!(plain.to_plain().unwrap(), b"test log");
+        assert_eq!(plain.get_encoding_type(), EncodingType::Plain);
     }
 }
