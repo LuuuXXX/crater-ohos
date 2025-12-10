@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ page_title }} - Crater OHOS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ page_title }}</h2>
+    <p>Monitor all experiments and their progress</p>
+</div>
+
+<div class="table-container">
+    <table class="experiments-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Assigned To</th>
+                <th>Requirement</th>
+                <th>Mode</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Progress</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if experiments %}
+                {% for exp in experiments %}
+                <tr>
+                    <td>
+                        <a href="/ui/ex/{{ exp.name }}" class="experiment-link">{{ exp.name }}</a>
+                    </td>
+                    <td>{{ exp.assigned_to }}</td>
+                    <td>{{ exp.requirement }}</td>
+                    <td><span class="badge badge-mode">{{ exp.mode }}</span></td>
+                    <td>{{ exp.priority }}</td>
+                    <td>
+                        <span class="badge badge-status badge-{{ exp.status }}">{{ exp.status }}</span>
+                    </td>
+                    <td>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill progress-{{ exp.status }}" style="width: {{ exp.progress_percentage }}%"></div>
+                            </div>
+                            <span class="progress-text">{{ exp.progress_percentage }}%</span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" class="no-data">No experiments found</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Auto-refresh every 30 seconds
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
+</script>
+{% endblock %}

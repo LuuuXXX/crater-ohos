@@ -1,0 +1,123 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ page_title }} - Crater OHOS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ name }}</h2>
+    <a href="/ui/queue" class="back-link">← Back to Queue</a>
+</div>
+
+<div class="experiment-detail">
+    <div class="detail-section">
+        <h3>Status & Progress</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <label>Status:</label>
+                <span class="badge badge-status badge-{{ status }}">{{ status }}</span>
+            </div>
+            <div class="detail-item">
+                <label>Mode:</label>
+                <span class="badge badge-mode">{{ mode }}</span>
+            </div>
+            <div class="detail-item">
+                <label>Priority:</label>
+                <span>{{ priority }}</span>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <label>Progress:</label>
+            <div class="progress-container large">
+                <div class="progress-bar">
+                    <div class="progress-fill progress-{{ status }}" style="width: {{ progress_percentage }}%"></div>
+                </div>
+                <span class="progress-text">{{ progress_percentage }}% ({{ completed_count }}/{{ total_count }} tasks)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-section">
+        <h3>Assignment & Requirements</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <label>Assigned To:</label>
+                <span>{{ assigned_to }}</span>
+            </div>
+            <div class="detail-item">
+                <label>Requirement:</label>
+                <span>{{ requirement }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-section">
+        <h3>Timeline</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <label>Created At:</label>
+                <span>{{ created_at }}</span>
+            </div>
+            <div class="detail-item">
+                <label>Started At:</label>
+                <span>{{ started_at }}</span>
+            </div>
+            <div class="detail-item">
+                <label>Completed At:</label>
+                <span>{{ completed_at }}</span>
+            </div>
+            <div class="detail-item">
+                <label>Duration:</label>
+                <span>{{ duration }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-section">
+        <h3>Performance Metrics</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <label>Average Task Time:</label>
+                <span>{{ average_task_time }}</span>
+            </div>
+            <div class="detail-item">
+                <label>Estimated Remaining:</label>
+                <span>{{ estimated_remaining }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-section">
+        <h3>Links & Reports</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <label>Report URL:</label>
+                {% if report_url != "N/A" %}
+                    <a href="{{ report_url }}" target="_blank" class="external-link">{{ report_url }}</a>
+                {% else %}
+                    <span>{{ report_url }}</span>
+                {% endif %}
+            </div>
+            <div class="detail-item">
+                <label>Platform Issue:</label>
+                {% if platform_issue_url != "N/A" %}
+                    <a href="{{ platform_issue_url }}" target="_blank" class="external-link">{{ platform_issue_url }}</a>
+                {% else %}
+                    <span>{{ platform_issue_url }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Auto-refresh every 10 seconds for running experiments
+    {% if status == "running" %}
+    setTimeout(function() {
+        location.reload();
+    }, 10000);
+    {% endif %}
+</script>
+{% endblock %}
