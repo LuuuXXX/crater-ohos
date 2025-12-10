@@ -35,6 +35,36 @@ impl fmt::Display for Toolchain {
     }
 }
 
+impl FromStr for Toolchain {
+    type Err = Error;
+
+    fn from_str(input: &str) -> Fallible<Self> {
+        // Parse format: "stable+target=aarch64-unknown-linux-gnu"
+        let mut parts = input.splitn(2, '+');
+        let source_str = parts.next().unwrap();
+        let source = RustwideToolchain::from_str(source_str)?;
+        
+        let mut target = None;
+        if let Some(flags) = parts.next() {
+            for flag in flags.split('+') {
+                if let Some(target_value) = flag.strip_prefix("target=") {
+                    target = Some(target_value.to_string());
+                }
+            }
+        }
+
+        Ok(Toolchain {
+            source,
+            target,
+            rustflags: None,
+            rustdocflags: None,
+            cargoflags: None,
+            ci_try: false,
+            patches: vec![],
+        })
+    }
+}
+
 #[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Debug, Clone)]
 pub struct CratePatch {
     pub name: String,
@@ -171,5 +201,25 @@ mod tests {
             patches: vec![],
         };
         assert_eq!(tc.to_string(), "stable (target: x86_64-unknown-linux-gnu)");
+    }
+
+    #[test]
+    fn test_toolchain_parsing() {
+        let tc = "stable".parse::<Toolchain>().unwrap();
+        assert_eq!(tc.source, RustwideToolchain::Dist("stable".to_string()));
+        assert_eq!(tc.target, None);
+
+        let tc = "beta".parse::<Toolchain>().unwrap();
+        assert_eq!(tc.source, RustwideToolchain::Dist("beta".to_string()));
+
+        let tc = "nightly-2024-01-01".parse::<Toolchain>().unwrap();
+        assert_eq!(tc.source, RustwideToolchain::Dist("nightly-2024-01-01".to_string()));
+    }
+
+    #[test]
+    fn test_toolchain_with_flags() {
+        let tc = "stable+target=aarch64-unknown-linux-gnu".parse::<Toolchain>().unwrap();
+        assert_eq!(tc.source, RustwideToolchain::Dist("stable".to_string()));
+        assert_eq!(tc.target, Some("aarch64-unknown-linux-gnu".to_string()));
     }
 }

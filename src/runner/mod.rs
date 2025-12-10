@@ -1,3 +1,6 @@
+// Allow dead code for Phase 3 functions not yet fully connected
+#![allow(dead_code)]
+
 mod tasks;
 mod test;
 mod worker;

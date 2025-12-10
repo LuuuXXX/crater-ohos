@@ -3,7 +3,6 @@ use crate::crates::Crate;
 use crate::experiments::Experiment;
 use crate::prelude::*;
 use crate::results::TestResult;
-use crate::toolchain::Toolchain;
 use mime::Mime;
 use std::borrow::Cow;
 use std::fs;
@@ -61,6 +60,15 @@ string_enum! {
 }
 
 from_into_string!(Comparison);
+
+impl Comparison {
+    pub fn show_in_summary(&self) -> bool {
+        matches!(
+            self,
+            Comparison::Regressed | Comparison::Fixed | Comparison::SpuriousRegressed | Comparison::SpuriousFixed
+        )
+    }
+}
 
 /// Trait for writing report files
 pub trait ReportWriter {
@@ -168,6 +176,16 @@ mod tests {
         assert_eq!(Comparison::Regressed.to_string(), "regressed");
         assert_eq!(Comparison::Fixed.to_string(), "fixed");
         assert_eq!(Comparison::SameTestPass.to_string(), "test-pass");
+    }
+
+    #[test]
+    fn test_comparison() {
+        assert!(Comparison::Regressed.show_in_summary());
+        assert!(Comparison::Fixed.show_in_summary());
+        assert!(!Comparison::SameTestPass.show_in_summary());
+        assert!(!Comparison::Skipped.show_in_summary());
+        assert!(Comparison::SpuriousRegressed.show_in_summary());
+        assert!(Comparison::SpuriousFixed.show_in_summary());
     }
 
     #[test]

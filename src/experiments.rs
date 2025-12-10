@@ -111,6 +111,30 @@ impl fmt::Display for CrateSelect {
     }
 }
 
+impl FromStr for CrateSelect {
+    type Err = Error;
+
+    fn from_str(input: &str) -> Fallible<Self> {
+        match input {
+            "full" => Ok(CrateSelect::Full),
+            "demo" => Ok(CrateSelect::Demo),
+            "local" => Ok(CrateSelect::Local),
+            "dummy" => Ok(CrateSelect::Dummy),
+            s if s.starts_with("top-") => {
+                let count = s[4..].parse::<u32>()
+                    .map_err(|_| anyhow::anyhow!("invalid top count: {}", s))?;
+                Ok(CrateSelect::Top(count))
+            }
+            s if s.starts_with("random-") => {
+                let count = s[7..].parse::<u32>()
+                    .map_err(|_| anyhow::anyhow!("invalid random count: {}", s))?;
+                Ok(CrateSelect::Random(count))
+            }
+            _ => anyhow::bail!("unknown crate select: {}", input),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub enum Assignee {
@@ -222,6 +246,16 @@ mod tests {
             "agent-1".parse::<Assignee>().unwrap(),
             Assignee::Agent("agent-1".to_string())
         );
+    }
+
+    #[test]
+    fn test_crate_select_parsing() {
+        assert_eq!("demo".parse::<CrateSelect>().unwrap(), CrateSelect::Demo);
+        assert_eq!("full".parse::<CrateSelect>().unwrap(), CrateSelect::Full);
+        assert_eq!("top-100".parse::<CrateSelect>().unwrap(), CrateSelect::Top(100));
+        assert_eq!("local".parse::<CrateSelect>().unwrap(), CrateSelect::Local);
+        assert_eq!("dummy".parse::<CrateSelect>().unwrap(), CrateSelect::Dummy);
+        assert_eq!("random-50".parse::<CrateSelect>().unwrap(), CrateSelect::Random(50));
     }
 
     #[test]
