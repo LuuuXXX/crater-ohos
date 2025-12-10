@@ -182,12 +182,42 @@ retry-count = 3
 - ✅ `display.rs`：显示工具
 - ✅ `archives.rs`：归档处理
 
-### 🚧 Phase 4: Service Layer（服务层）- 计划中
+### 🚧 Phase 4: Service Layer（服务层）- ✅ 已完成
 
-- [ ] HTTP API 服务
-- [ ] Webhook 回调
-- [ ] Agent 管理
-- [ ] 实验操作接口
+已完成以下模块：
+
+#### 1. Actions 模块 (`src/actions/`)
+- ✅ `experiments.rs`：实验生命周期管理
+  - `CreateExperiment`：创建实验请求
+  - `EditExperiment`：编辑实验请求  
+  - `ExperimentActions` trait：实验操作接口
+    - `create()` - 创建新实验
+    - `edit()` - 编辑实验（仅限 queued 状态）
+    - `delete()` - 删除实验（仅限 queued 状态）
+    - `get()` - 获取实验详情
+    - `list()` - 列出所有实验
+    - `run()` - 运行实验
+    - `complete()` - 完成实验
+    - `abort()` - 中止实验
+
+#### 2. Server 模块 (`src/server/`)
+- ✅ `agents.rs`：Agent 管理
+  - `Agent` 结构体和 `AgentStatus` 枚举
+  - `RegisterAgent` 请求结构
+  - `AgentManager` trait：Agent 管理接口
+    - 注册、心跳、任务分配、状态管理
+- ✅ `callback.rs`：Callback 通知
+  - `CallbackEvent` 枚举：事件类型
+  - `CallbackPayload` 结构：回调数据
+  - `CallbackService`：HTTP 回调服务（带重试）
+- ✅ `tokens.rs`：API Token 管理
+  - `ApiToken` 结构和 `Permission` 枚举
+  - `TokenManager` trait：Token 管理接口
+
+#### 3. 数据库支持
+- ✅ `agents` 表：Agent 信息存储
+- ✅ `api_tokens` 表：API Token 存储
+- ✅ 数据库迁移：自动创建新表
 
 ### 🚧 Phase 5: API Layer（API 层）- 计划中
 
