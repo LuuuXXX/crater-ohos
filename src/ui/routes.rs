@@ -26,7 +26,13 @@ pub async fn queue_page(
     // Calculate progress for each experiment
     let mut exp_items = Vec::new();
     for exp in experiments {
-        let (completed, total) = db.get_experiment_progress(&exp.name).unwrap_or((0, 0));
+        let (completed, total) = match db.get_experiment_progress(&exp.name) {
+            Ok(progress) => progress,
+            Err(e) => {
+                log::warn!("Failed to get progress for experiment {}: {}", exp.name, e);
+                (0, 0)
+            }
+        };
         let progress_percentage = if total > 0 {
             (completed as f64 / total as f64) * 100.0
         } else {
@@ -82,7 +88,13 @@ pub async fn experiment_page(
         }
     };
 
-    let (completed, total) = db.get_experiment_progress(&name).unwrap_or((0, 0));
+    let (completed, total) = match db.get_experiment_progress(&name) {
+        Ok(progress) => progress,
+        Err(e) => {
+            log::warn!("Failed to get progress for experiment {}: {}", name, e);
+            (0, 0)
+        }
+    };
     let progress_percentage = if total > 0 {
         (completed as f64 / total as f64) * 100.0
     } else {

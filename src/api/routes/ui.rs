@@ -64,9 +64,13 @@ pub async fn list_experiments(
 
     let mut items = Vec::new();
     for exp in experiments {
-        let (completed, total) = db
-            .get_experiment_progress(&exp.name)
-            .unwrap_or((0, 0));
+        let (completed, total) = match db.get_experiment_progress(&exp.name) {
+            Ok(progress) => progress,
+            Err(e) => {
+                log::warn!("Failed to get progress for experiment {}: {}", exp.name, e);
+                (0, 0)
+            }
+        };
         
         let progress_percentage = if total > 0 {
             (completed as f64 / total as f64) * 100.0
@@ -100,9 +104,13 @@ pub async fn get_experiment(
         .map_err(|e| ApiError::InternalServerError(e.to_string()))?
         .ok_or_else(|| ApiError::NotFound(format!("Experiment '{}' not found", name)))?;
 
-    let (completed, total) = db
-        .get_experiment_progress(&name)
-        .unwrap_or((0, 0));
+    let (completed, total) = match db.get_experiment_progress(&name) {
+        Ok(progress) => progress,
+        Err(e) => {
+            log::warn!("Failed to get progress for experiment {}: {}", name, e);
+            (0, 0)
+        }
+    };
     
     let progress_percentage = if total > 0 {
         (completed as f64 / total as f64) * 100.0
@@ -173,9 +181,13 @@ pub async fn get_progress(
         .map_err(|e| ApiError::InternalServerError(e.to_string()))?
         .ok_or_else(|| ApiError::NotFound(format!("Experiment '{}' not found", name)))?;
 
-    let (completed, total) = db
-        .get_experiment_progress(&name)
-        .unwrap_or((0, 0));
+    let (completed, total) = match db.get_experiment_progress(&name) {
+        Ok(progress) => progress,
+        Err(e) => {
+            log::warn!("Failed to get progress for experiment {}: {}", name, e);
+            (0, 0)
+        }
+    };
     
     let percentage = if total > 0 {
         (completed as f64 / total as f64) * 100.0

@@ -8,6 +8,8 @@ lazy_static! {
             Ok(t) => t,
             Err(e) => {
                 eprintln!("Template parsing error: {}", e);
+                eprintln!("Please ensure template files exist in the 'templates/ui/' directory");
+                eprintln!("Expected files: layout.html, queue.html, experiment.html");
                 std::process::exit(1);
             }
         }

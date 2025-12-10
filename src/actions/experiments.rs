@@ -386,6 +386,14 @@ impl ExperimentActions for Database {
 impl Database {
     /// Get the progress of an experiment
     /// Returns (completed_count, total_count)
+    /// 
+    /// Progress is calculated by:
+    /// - completed_count: Number of unique crates that have results in the results table
+    /// - total_count: Number of non-skipped crates in the experiment_crates table
+    /// 
+    /// Note: Uses COUNT(DISTINCT crate) to count unique crates with results.
+    /// Each crate may have multiple results (one per toolchain), so DISTINCT is used
+    /// to count each crate only once.
     pub fn get_experiment_progress(&self, experiment_name: &str) -> Fallible<(i64, i64)> {
         let conn = self.conn()?;
         
