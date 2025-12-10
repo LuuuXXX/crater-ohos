@@ -16,7 +16,7 @@ impl PlatformAdapter for GiteeAdapter {
         PlatformType::Gitee
     }
     
-    // 实现 Gitee 特定的 API 调用
+    // Gitee-specific API implementation
     // Gitee API: https://gitee.com/api/v5/swagger
     
     async fn check_permission(&self, _user: &str, _permission: &str) -> Fallible<bool> {
@@ -49,7 +49,7 @@ impl PlatformAdapter for GiteeAdapter {
     }
     
     fn verify_webhook_signature(&self, _payload: &[u8], signature: &str) -> bool {
-        // Gitee webhook 签名验证
+        // Gitee webhook signature verification
         if let Some(secret) = &self.config.webhook_secret {
             return signature == *secret;
         }

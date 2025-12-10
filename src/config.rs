@@ -76,7 +76,7 @@ impl CallbackConfig {
     }
 }
 
-/// 平台配置
+/// Platform configuration
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PlatformInstanceConfig {
     pub api_base_url: String,
@@ -84,7 +84,7 @@ pub struct PlatformInstanceConfig {
     pub webhook_secret: Option<String>,
 }
 
-/// 多平台配置
+/// Multi-platform configuration
 #[derive(Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "kebab-case")]
 pub struct PlatformsConfig {

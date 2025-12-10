@@ -16,7 +16,7 @@ impl PlatformAdapter for GitLabAdapter {
         PlatformType::GitLab
     }
     
-    // 实现 GitLab 特定的 API 调用
+    // GitLab-specific API implementation
     // GitLab API: https://docs.gitlab.com/ee/api/
     
     async fn check_permission(&self, _user: &str, _permission: &str) -> Fallible<bool> {

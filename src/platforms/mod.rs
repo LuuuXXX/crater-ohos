@@ -7,7 +7,7 @@ use crate::prelude::*;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
-/// 平台类型枚举
+/// Platform type enumeration
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum PlatformType {
@@ -30,7 +30,7 @@ impl PlatformType {
     }
 }
 
-/// 平台用户信息
+/// Platform user information
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlatformUser {
     pub id: String,
@@ -40,7 +40,7 @@ pub struct PlatformUser {
     pub avatar_url: Option<String>,
 }
 
-/// 平台仓库信息
+/// Platform repository information
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlatformRepo {
     pub id: String,
@@ -51,7 +51,7 @@ pub struct PlatformRepo {
     pub default_branch: String,
 }
 
-/// 平台评论
+/// Platform comment
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlatformComment {
     pub id: String,
@@ -60,35 +60,35 @@ pub struct PlatformComment {
     pub created_at: String,
 }
 
-/// 平台适配器 trait
+/// Platform adapter trait
 #[async_trait]
 pub trait PlatformAdapter: Send + Sync {
-    /// 获取平台类型
+    /// Get platform type
     fn platform_type(&self) -> PlatformType;
     
-    /// 验证用户是否有权限
+    /// Check if user has permission
     async fn check_permission(&self, user: &str, permission: &str) -> Fallible<bool>;
     
-    /// 获取 Issue/PR 信息
+    /// Get Issue/PR information
     async fn get_issue(&self, repo: &str, number: &str) -> Fallible<PlatformIssue>;
     
-    /// 发表评论
+    /// Post a comment
     async fn post_comment(&self, repo: &str, issue_number: &str, body: &str) -> Fallible<PlatformComment>;
     
-    /// 更新评论
+    /// Update a comment
     async fn update_comment(&self, repo: &str, comment_id: &str, body: &str) -> Fallible<PlatformComment>;
     
-    /// 获取仓库信息
+    /// Get repository information
     async fn get_repo(&self, owner: &str, name: &str) -> Fallible<PlatformRepo>;
     
-    /// 获取用户信息
+    /// Get user information
     async fn get_user(&self, username: &str) -> Fallible<PlatformUser>;
     
-    /// 验证 webhook 签名
+    /// Verify webhook signature
     fn verify_webhook_signature(&self, payload: &[u8], signature: &str) -> bool;
 }
 
-/// 平台配置
+/// Platform configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlatformConfig {
     pub api_base_url: String,
@@ -96,7 +96,7 @@ pub struct PlatformConfig {
     pub webhook_secret: Option<String>,
 }
 
-/// 平台工厂
+/// Platform factory
 pub struct PlatformFactory;
 
 impl PlatformFactory {
@@ -105,8 +105,8 @@ impl PlatformFactory {
             PlatformType::GitHub => Box::new(github::GitHubAdapter::new(config)),
             PlatformType::Gitee => Box::new(gitee::GiteeAdapter::new(config)),
             PlatformType::GitLab => Box::new(gitlab::GitLabAdapter::new(config)),
-            PlatformType::GitCode => Box::new(gitlab::GitLabAdapter::new(config)), // GitCode 基于 GitLab
-            _ => Box::new(github::GitHubAdapter::new(config)), // 默认
+            PlatformType::GitCode => Box::new(gitlab::GitLabAdapter::new(config)), // GitCode is based on GitLab
+            _ => Box::new(github::GitHubAdapter::new(config)), // Default to GitHub
         }
     }
 }
