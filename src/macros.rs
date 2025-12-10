@@ -46,7 +46,7 @@ macro_rules! from_into_string {
         impl TryFrom<String> for $type {
             type Error = ::anyhow::Error;
 
-            fn try_from(s: String) -> Result<Self, Self::Error> {
+            fn try_from(s: String) -> Result<Self, <$type as TryFrom<String>>::Error> {
                 s.parse()
             }
         }
