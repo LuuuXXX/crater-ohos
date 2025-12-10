@@ -139,12 +139,16 @@ const MIGRATIONS: &[Migration] = &[
     Migration {
         name: "rename_github_issue_to_platform_issue",
         sql: "
-            -- Add new platform_issue columns
+            -- Add new platform_issue columns for platform-agnostic design
+            -- platform_issue: stores platform identifier (github, gitcode, gitlab, etc.)
+            -- platform_issue_url: stores the HTML URL for the issue/PR
+            -- platform_issue_identifier: stores the issue/PR number or identifier
             ALTER TABLE experiments ADD COLUMN platform_issue TEXT;
             ALTER TABLE experiments ADD COLUMN platform_issue_url TEXT;
             ALTER TABLE experiments ADD COLUMN platform_issue_identifier TEXT;
             
-            -- Copy data from old columns to new ones
+            -- Migrate data from old GitHub-specific columns
+            -- Note: platform_issue_identifier is a new field, so no migration needed
             UPDATE experiments SET platform_issue = github_issue WHERE github_issue IS NOT NULL;
             UPDATE experiments SET platform_issue_url = github_issue_url WHERE github_issue_url IS NOT NULL;
         ",
