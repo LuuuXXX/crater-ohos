@@ -51,8 +51,9 @@ hex = "0.4"
 # Web framework
 axum = "0.7"
 tower = "0.4"
-tower-http = { version = "0.5", features = ["cors", "trace"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "fs"] }
 tokio = { version = "1.0", features = ["rt-multi-thread", "macros", "signal"] }
+tera = "1.19"
 
 # CLI
 clap = { version = "4", features = ["derive"] }

@@ -21,6 +21,7 @@ pub mod results;
 pub mod runner;
 pub mod server;
 pub mod toolchain;
+pub mod ui;
 pub mod utils;
 
 pub static USER_AGENT: &str = "crater-ohos";

@@ -11,6 +11,7 @@ use axum::{
 };
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
+use tower_http::services::ServeDir;
 
 /// Build the API router
 pub fn build_router(db: Arc<Database>) -> Router {
@@ -44,11 +45,28 @@ pub fn build_router(db: Arc<Database>) -> Router {
             middleware::auth::auth,
         ));
 
-    // Combine all routes under /api/v1
+    // UI API routes (no auth required for read-only UI endpoints)
+    let ui_api_routes = Router::new()
+        .route("/ui/experiments", get(routes::ui::list_experiments))
+        .route("/ui/experiments/:name", get(routes::ui::get_experiment))
+        .route("/ui/experiments/:name/progress", get(routes::ui::get_progress));
+
+    // UI page routes (no auth required)
+    let ui_page_routes = Router::new()
+        .route("/ui/queue", get(crate::ui::queue_page))
+        .route("/ui/ex/:name", get(crate::ui::experiment_page));
+
+    // Static files
+    let static_files = ServeDir::new("static");
+
+    // Combine all routes
     Router::new()
         .nest("/api/v1", public_routes)
         .nest("/api/v1", experiment_routes)
         .nest("/api/v1", agent_routes)
+        .nest("/api", ui_api_routes)
+        .merge(ui_page_routes)
+        .nest_service("/static", static_files)
         .layer(CorsLayer::permissive())
         .with_state(db)
 }
