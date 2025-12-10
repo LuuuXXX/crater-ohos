@@ -1,0 +1,38 @@
+[package]
+name = "crater-ohos"
+version = "0.1.0"
+edition = "2021"
+authors = ["Crater OHOS Contributors"]
+description = "A tool for testing third-party libraries in OHOS environments"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+# Database
+rusqlite = { version = "0.31", features = ["bundled"] }
+r2d2 = "0.8"
+r2d2_sqlite = "0.24"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_derive = "1.0"
+serde_json = "1.0"
+toml = "0.8"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# Utilities
+regex = "1.10"
+reqwest = { version = "0.11", features = ["blocking", "json"] }
+tempfile = "3.10"
+lazy_static = "1.4"
+
+[dev-dependencies]
