@@ -136,4 +136,17 @@ const MIGRATIONS: &[Migration] = &[
             CREATE INDEX experiment_metadata__experiment ON experiment_metadata(experiment);
         ",
     },
+    Migration {
+        name: "rename_github_issue_to_platform_issue",
+        sql: "
+            -- Add new platform_issue columns
+            ALTER TABLE experiments ADD COLUMN platform_issue TEXT;
+            ALTER TABLE experiments ADD COLUMN platform_issue_url TEXT;
+            ALTER TABLE experiments ADD COLUMN platform_issue_identifier TEXT;
+            
+            -- Copy data from old columns to new ones
+            UPDATE experiments SET platform_issue = github_issue WHERE github_issue IS NOT NULL;
+            UPDATE experiments SET platform_issue_url = github_issue_url WHERE github_issue_url IS NOT NULL;
+        ",
+    },
 ];
