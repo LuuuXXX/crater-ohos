@@ -25,6 +25,7 @@ impl PlatformAdapter for GitCodeAdapter {
     
     async fn get_issue(&self, repo: &str, number: &str) -> Fallible<PlatformIssue> {
         let base_url = &self.config.api_base_url;
+        // GitCode uses GitLab-compatible API structure
         Ok(PlatformIssue {
             platform: "gitcode".to_string(),
             api_url: format!("{}/projects/{}/issues/{}", base_url, repo, number),
