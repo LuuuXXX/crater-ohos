@@ -153,4 +153,41 @@ const MIGRATIONS: &[Migration] = &[
             UPDATE experiments SET platform_issue_url = github_issue_url WHERE github_issue_url IS NOT NULL;
         ",
     },
+    Migration {
+        name: "add_requirement_column",
+        sql: "
+            ALTER TABLE experiments ADD COLUMN requirement TEXT;
+        ",
+    },
+    Migration {
+        name: "create_agents_table",
+        sql: "
+            CREATE TABLE IF NOT EXISTS agents (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                capabilities TEXT NOT NULL,
+                last_heartbeat TEXT NOT NULL,
+                current_experiment TEXT,
+                status TEXT NOT NULL DEFAULT 'idle',
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (current_experiment) REFERENCES experiments(name)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_agents_status ON agents(status);
+        ",
+    },
+    Migration {
+        name: "create_api_tokens_table",
+        sql: "
+            CREATE TABLE IF NOT EXISTS api_tokens (
+                token TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                permissions TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                expires_at TEXT
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_tokens_name ON api_tokens(name);
+        ",
+    },
 ];

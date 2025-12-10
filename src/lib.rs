@@ -6,6 +6,7 @@ extern crate serde_derive;
 #[macro_use]
 mod macros;
 
+pub mod actions;
 pub mod config;
 pub mod crates;
 pub mod db;
@@ -15,6 +16,7 @@ pub mod prelude;
 pub mod report;
 pub mod results;
 pub mod runner;
+pub mod server;
 pub mod toolchain;
 pub mod utils;
 

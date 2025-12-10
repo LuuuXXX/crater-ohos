@@ -1,4 +1,7 @@
+pub mod experiments;
 pub mod migrations;
+
+pub use experiments::Database;
 
 use crate::prelude::*;
 use r2d2::Pool;
