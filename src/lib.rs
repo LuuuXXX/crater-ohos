@@ -12,6 +12,7 @@ pub mod crates;
 pub mod db;
 pub mod dirs;
 pub mod experiments;
+pub mod platforms;
 pub mod prelude;
 pub mod report;
 pub mod results;
