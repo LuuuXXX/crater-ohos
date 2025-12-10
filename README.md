@@ -11,24 +11,27 @@ Crater-OHOS 采用 **Core + Bot 解耦架构**：
 │                      API Layer (Phase 6)                     │
 │            REST API / CLI 接口，供 Bot 或用户调用              │
 ├─────────────────────────────────────────────────────────────┤
-│                   Service Layer (Phase 4)                    │
+│                   Service Layer (Phase 4) ✅                 │
 │     actions/  - 业务操作（创建/编辑/删除实验）                  │
 │     server/   - 服务端逻辑（agent管理、callback通知）           │
 ├─────────────────────────────────────────────────────────────┤
-│                   Domain Layer (Phase 2)                     │
+│                   Domain Layer (Phase 2) ✅                  │
 │     experiments.rs - 实验领域模型                              │
 │     results/       - 结果领域模型                              │
 │     crates/        - Crate 领域模型                           │
 │     toolchain.rs   - 工具链领域模型                            │
 ├─────────────────────────────────────────────────────────────┤
-│                  Execution Layer (Phase 3)                   │
+│                  Execution Layer (Phase 3) ✅                │
 │     runner/        - 构建/测试执行引擎                         │
 │     report/        - 报告生成引擎                              │
 ├─────────────────────────────────────────────────────────────┤
-│                Infrastructure Layer (Phase 1)                │
+│                Infrastructure Layer (Phase 1) ✅             │
 │     db/            - 数据库访问                                │
 │     config.rs      - 配置管理                                  │
 │     utils/         - 通用工具                                  │
+├─────────────────────────────────────────────────────────────┤
+│            Platform Abstraction (Phase 5) ✅                 │
+│     platforms/     - 平台适配器（GitHub, Gitee, GitLab）       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -219,25 +222,118 @@ retry-count = 3
 - ✅ `api_tokens` 表：API Token 存储
 - ✅ 数据库迁移：自动创建新表
 
-### 🚧 Phase 5: API Layer（API 层）- 计划中
+### ✅ Phase 5: Platform Abstraction（平台抽象层）- 已完成
+
+已完成以下模块：
+
+#### 1. 平台模块 (`src/platforms/`)
+- ✅ `mod.rs`：平台抽象 trait 和工厂模式
+  - `PlatformType` 枚举：支持 GitHub、Gitee、GitLab、GitCode
+  - `PlatformAdapter` trait：统一的平台操作接口
+  - `PlatformFactory`：平台适配器工厂
+  - `PlatformConfig`：平台配置结构
+- ✅ `github.rs`：GitHub 适配器实现
+  - 支持 Issue 获取、评论发表、Webhook 签名验证
+- ✅ `gitee.rs`：Gitee 适配器实现
+  - 适配 Gitee API v5
+- ✅ `gitlab.rs`：GitLab 适配器实现
+  - 支持 GitLab 和 GitCode（基于 GitLab）
+
+#### 2. 配置支持
+- ✅ 多平台配置 (`PlatformsConfig`)
+  - GitHub、Gitee、GitLab 独立配置
+  - API 基础 URL、Token、Webhook Secret
+
+#### 3. 测试覆盖
+- ✅ 平台类型序列化测试
+- ✅ 平台工厂测试
+- ✅ GitHub Issue URL 生成测试
+- ✅ Gitee Issue URL 生成测试
+- ✅ GitLab Issue URL 生成测试
+- ✅ Webhook 签名验证测试
+
+### 🚧 Phase 6: API Layer（API 层）- 计划中
 
 - [ ] REST API
 - [ ] CLI 命令
 - [ ] 认证和授权
 
-### 🚧 Phase 6: Bot Integration（Bot 集成）- 计划中
+### 🚧 Phase 7: Bot Integration（Bot 集成）- 计划中
 
 - [ ] Gitee Bot
 - [ ] GitHub Bot
 - [ ] GitLab Bot
 
+## 支持的平台
+
+- **GitHub**：通过 GitHub API 支持
+- **Gitee**：通过 Gitee API v5 支持
+- **GitLab**：通过 GitLab API 支持
+- **GitCode**：基于 GitLab 适配器支持
+
+## 添加新平台支持
+
+如需添加新平台支持，请遵循以下步骤：
+
+1. 在 `src/platforms/` 下创建新的适配器文件（如 `custom.rs`）
+2. 实现 `PlatformAdapter` trait，提供以下功能：
+   - `platform_type()` - 返回平台类型
+   - `check_permission()` - 权限检查
+   - `get_issue()` - 获取 Issue 信息
+   - `post_comment()` - 发表评论
+   - `update_comment()` - 更新评论
+   - `get_repo()` - 获取仓库信息
+   - `get_user()` - 获取用户信息
+   - `verify_webhook_signature()` - Webhook 签名验证
+3. 在 `PlatformType` 枚举中添加新平台
+4. 在 `PlatformFactory::create()` 中注册新适配器
+5. 在 `config.rs` 的 `PlatformsConfig` 中添加平台配置
+6. 编写相应的测试用例
+
+示例：
+
+```rust
+// src/platforms/custom.rs
+use super::*;
+
+pub struct CustomAdapter {
+    config: PlatformConfig,
+}
+
+impl CustomAdapter {
+    pub fn new(config: PlatformConfig) -> Self {
+        Self { config }
+    }
+}
+
+#[async_trait]
+impl PlatformAdapter for CustomAdapter {
+    fn platform_type(&self) -> PlatformType {
+        PlatformType::Custom("my-platform".to_string())
+    }
+    
+    async fn get_issue(&self, repo: &str, number: &str) -> Fallible<PlatformIssue> {
+        // 实现自定义平台的 Issue 获取逻辑
+        Ok(PlatformIssue {
+            platform: "my-platform".to_string(),
+            api_url: format!("https://my-platform.com/api/repos/{}/issues/{}", repo, number),
+            html_url: format!("https://my-platform.com/{}/issues/{}", repo, number),
+            identifier: number.to_string(),
+        })
+    }
+    
+    // 实现其他必需的方法...
+}
+```
+
 ## 测试覆盖
 
 项目包含全面的测试覆盖：
 
-- **单元测试**：90+ 测试用例
+- **单元测试**：109 测试用例
   - 数据库操作测试
   - 领域模型测试
+  - 平台适配器测试
   - 工具函数测试
   - 序列化/反序列化测试
   

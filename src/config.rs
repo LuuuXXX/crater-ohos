@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use crate::utils::size::Size;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 
@@ -9,6 +10,8 @@ pub struct Config {
     pub demo_crates: DemoCrates,
     pub sandbox: SandboxConfig,
     pub server: ServerConfig,
+    #[serde(default)]
+    pub platforms: PlatformsConfig,
 }
 
 impl Config {
@@ -71,6 +74,23 @@ impl CallbackConfig {
     pub fn retry_count(&self) -> u32 {
         self.retry_count.unwrap_or(3)
     }
+}
+
+/// Platform configuration
+#[derive(Clone, Serialize, Deserialize)]
+pub struct PlatformInstanceConfig {
+    pub api_base_url: String,
+    pub token: Option<String>,
+    pub webhook_secret: Option<String>,
+}
+
+/// Multi-platform configuration
+#[derive(Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "kebab-case")]
+pub struct PlatformsConfig {
+    pub github: Option<PlatformInstanceConfig>,
+    pub gitee: Option<PlatformInstanceConfig>,
+    pub gitlab: Option<PlatformInstanceConfig>,
 }
 
 #[cfg(test)]

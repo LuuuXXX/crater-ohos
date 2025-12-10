@@ -214,6 +214,7 @@ mod tests {
                 },
                 callback: Default::default(),
             },
+            platforms: Default::default(),
         };
 
         let result = run_ex(&ex, &workspace, &recorder, 2, &config, &next_crate);
