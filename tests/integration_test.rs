@@ -20,8 +20,10 @@ fn test_config_loading() {
     // 测试配置文件如果存在可以正常加载
     use crater_ohos::config::DemoCrates;
     let demo_crates = DemoCrates::default();
-    // Default should work
-    assert!(demo_crates.crates.is_empty() || !demo_crates.crates.is_empty());
+    // Default should create an empty crates list
+    assert_eq!(demo_crates.crates.len(), 0);
+    assert_eq!(demo_crates.github_repos.len(), 0);
+    assert_eq!(demo_crates.local_crates.len(), 0);
 }
 
 #[test]
