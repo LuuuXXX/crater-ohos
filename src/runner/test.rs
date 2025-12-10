@@ -123,7 +123,7 @@ pub(super) fn test_rustdoc(ctx: &TaskCtx) -> Fallible<TestResult> {
 }
 
 /// Run cargo fix on a crate
-pub(crate) fn fix(ctx: &TaskCtx) -> Fallible<TestResult> {
+pub(super) fn fix(ctx: &TaskCtx) -> Fallible<TestResult> {
     info!("Running cargo fix on crate {}", ctx.krate);
 
     // Placeholder implementation

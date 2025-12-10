@@ -155,8 +155,6 @@ mod tests {
 
     #[test]
     fn test_run_ex_basic() {
-        use std::str::FromStr;
-        
         let tc = Toolchain {
             source: RustwideToolchain::Dist("stable".to_string()),
             target: None,
