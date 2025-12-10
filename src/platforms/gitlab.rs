@@ -50,7 +50,7 @@ impl PlatformAdapter for GitLabAdapter {
     }
     
     fn verify_webhook_signature(&self, _payload: &[u8], signature: &str) -> bool {
-        // GitLab webhook 使用 X-Gitlab-Token header
+        // GitLab webhook uses X-Gitlab-Token header
         if let Some(secret) = &self.config.webhook_secret {
             return signature == *secret;
         }

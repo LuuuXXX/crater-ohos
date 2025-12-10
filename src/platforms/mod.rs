@@ -106,7 +106,11 @@ impl PlatformFactory {
             PlatformType::Gitee => Box::new(gitee::GiteeAdapter::new(config)),
             PlatformType::GitLab => Box::new(gitlab::GitLabAdapter::new(config)),
             PlatformType::GitCode => Box::new(gitlab::GitLabAdapter::new(config)), // GitCode is based on GitLab
-            _ => Box::new(github::GitHubAdapter::new(config)), // Default to GitHub
+            PlatformType::Custom(_) => {
+                // Custom platforms default to GitHub adapter
+                // In the future, this could load a dynamically configured adapter
+                Box::new(github::GitHubAdapter::new(config))
+            }
         }
     }
 }
